@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Domain;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -13,7 +14,7 @@ namespace API.Controllers
     public class ValuesController : ControllerBase
     {
         private readonly DataContext _context;
-        public ValuesController(DataContext context)
+        public ValuesController(DataContext context) 
         {
             this._context = context;
         }
@@ -26,6 +27,7 @@ namespace API.Controllers
             return Ok(values);
         }
 
+        //GET api/values/id
         [HttpGet("{id}")]
         public async Task<ActionResult<Value>>Get(int id)
         {
