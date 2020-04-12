@@ -105,14 +105,6 @@ class ActivityStore {
       });
     }
   };
-  @action openCreateForm = () => {
-    this.selectedActivity = null;
-  };
-
-  //Details
-  @action selectActivity = (id: string) => {
-    this.selectedActivity = this.activityRegistry.get(id);
-  };
 
   //Edit
   @action editActivity = async (activity: IActivity) => {
@@ -130,12 +122,6 @@ class ActivityStore {
         this.submitting = false;
       });
     }
-  };
-  @action openEditForm = (id: string) => {
-    this.selectedActivity = this.activityRegistry.get(id);
-  };
-  @action cancelSelectedActivity = () => {
-    this.selectedActivity = null;
   };
 
   //Delete
