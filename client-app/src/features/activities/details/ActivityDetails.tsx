@@ -24,6 +24,7 @@ const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({ match, h
   if (!activity) return <h2>Activity not found</h2>;
 
   return (
+    //#region Old Detail
     // <Card fluid>
     //   <Image src={`/assets/categoryImages/${activity!.category}.jpg`} wrapped ui={false} />
     //   <Card.Content>
@@ -41,6 +42,7 @@ const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({ match, h
     //     </Button.Group>
     //   </Card.Content>
     // </Card>
+    //#endregion
     <Grid>
       <GridColumn width={10}>
         <ActivityDetailHeader activity={activity} />
