@@ -23,8 +23,10 @@ export class ActivityFormValues implements IActivityFormValues {
   venue: string = '';
 
   constructor(init?: IActivityFormValues) {
-    if (init && init.date && !!init.time) {
-      init.time = init.date;
+    if (init && init.date) {
+      // Do NOT FUCKING CHANGE OBJECT OUTSIDE MOBX
+      //init.time=init.date
+      this.time = init.date;
     }
     Object.assign(this, init);
   }

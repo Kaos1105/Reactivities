@@ -142,6 +142,7 @@ const ActivityForm: React.FC<RouteComponentProps<DetailParams>> = ({ match, hist
                     date={true}
                     placeholder='Date'
                     value={activity.date}
+                    //{...console.log(activity.date)}
                     component={DateInput}
                   />
                   <Field
@@ -149,6 +150,7 @@ const ActivityForm: React.FC<RouteComponentProps<DetailParams>> = ({ match, hist
                     time={true}
                     placeholder='Time'
                     value={activity.time}
+                    //{...console.log(activity.time)}
                     component={DateInput}
                   />
                 </Form.Group>
