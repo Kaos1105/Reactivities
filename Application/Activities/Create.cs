@@ -50,7 +50,7 @@ namespace Application.Activities
                     Title = request.Title,
                     Description = request.Description,
                     Category = request.Category,
-                    Date = request.Date,
+                    Date = request.Date.ToLocalTime(),
                     City = request.City,
                     Venue = request.Venue
                 };

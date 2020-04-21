@@ -54,6 +54,7 @@ namespace Application.Activities
                 activity.Description = request.Description ?? activity.Description;
                 activity.Category = request.Category ?? activity.Category;
                 activity.Date = request.Date ?? activity.Date;
+                activity.Date = activity.Date.ToLocalTime();
                 activity.City = request.City ?? activity.City;
                 activity.Venue = request.Venue ?? activity.Venue;
 

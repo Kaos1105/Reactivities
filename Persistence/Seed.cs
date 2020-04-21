@@ -1,14 +1,43 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Domain;
+using Microsoft.AspNetCore.Identity;
 
 namespace Persistence
 {
     public class Seed
     {
-        public static void SeedData(DataContext context)
+        public static async Task SeedData(DataContext context, UserManager<AppUser> userManager)
         {
+            //check if is there any identity database
+            if (!userManager.Users.Any())
+            {
+                var users = new List<AppUser>
+                {
+                    new AppUser{
+                        DisplayName="Bob",
+                        UserName="bob",
+                        Email="bob@gmail.com"
+                    },
+                    new AppUser{
+                        DisplayName="Dan",
+                        UserName="dan",
+                        Email="dan@gmail.com"
+                    },
+                    new AppUser{
+                        DisplayName="Kaos",
+                        UserName="kaos",
+                        Email="kaos@gmail.com"
+                    },
+                };
+                foreach (var user in users)
+                {
+                    await userManager.CreateAsync(user, "P@ssw0rd");
+                }
+            }
+
             //check if database have any data, if not create db
             if (!context.Activities.Any())
             {
