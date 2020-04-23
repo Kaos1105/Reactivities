@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Application.Errors;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -51,6 +52,7 @@ namespace API.Middleware
                     break;
             }
             context.Response.ContentType = "application/json";
+            //context.Response.Headers.Add("Status-Text", ReasonPhrases.GetReasonPhrase(context.Response.StatusCode));
             if (errors != null)
             {
                 var result = JsonConvert.SerializeObject(new

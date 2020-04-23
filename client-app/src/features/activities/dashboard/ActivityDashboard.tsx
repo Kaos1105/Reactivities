@@ -3,19 +3,20 @@ import { Grid } from 'semantic-ui-react';
 import ActivityList from './ActivityList';
 import { observer } from 'mobx-react-lite';
 import LoadingComponent from '../../../app/layout/LoadingComponent';
-import ActivityStore from '../../../app/stores/activityStore';
+import { RootStoreContext } from '../../../app/stores/rootStore';
 
 //pass down props from parent
 
 const ActivityDashboard: React.FC = () => {
-  const activityStore = useContext(ActivityStore);
+  const rootStore = useContext(RootStoreContext);
+  const { loadActivities, loadingInitial } = rootStore.activityStore;
   // Similar to componentDidMount and componentDidUpdate:
   // first parameter is componentDidMount, second is componentDidUpdate with return similar to componentUnMount
   useEffect(() => {
-    activityStore.loadActivities();
-  }, [activityStore]);
+    loadActivities();
+  }, [loadActivities]);
 
-  if (activityStore.loadingInitial) return <LoadingComponent content={'Loading component...'} />;
+  if (loadingInitial) return <LoadingComponent content={'Loading component...'} />;
 
   return (
     <Grid>
@@ -38,7 +39,7 @@ const ActivityDashboard: React.FC = () => {
             key={(selectedActivity && selectedActivity.id) || 0}
           />
         )} */}
-        <h2>Activity</h2>
+        <h2>Activity Filters</h2>
       </Grid.Column>
     </Grid>
   );
