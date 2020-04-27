@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -10,18 +11,20 @@ namespace Application.Activities
 {
     public class List
     {
-        public class Query : IRequest<List<Activity>> { }
+        public class Query : IRequest<List<ActivityDTO>> { }
 
-        public class Handler : IRequestHandler<Query, List<Activity>>
+        public class Handler : IRequestHandler<Query, List<ActivityDTO>>
         {
             private readonly DataContext _context;
-            public Handler(DataContext context)
+            private readonly IMapper _mapper;
+
+            public Handler(DataContext context, IMapper mapper)
             {
                 this._context = context;
-
+                this._mapper = mapper;
             }
 
-            public async Task<List<Activity>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<List<ActivityDTO>> Handle(Query request, CancellationToken cancellationToken)
             {
                 //CancellationToken is using when request is cancel so that the sever will abort current response
                 // try
@@ -38,8 +41,14 @@ namespace Application.Activities
                 //     System.Console.WriteLine("Task was cancelled");
                 // }
 
+                //eager loading
+                // var activities = await _context.Activities.Include(x => x.UserActivities).ThenInclude(x => x.AppUser).ToListAsync();
+
+                //lazy loading
                 var activities = await _context.Activities.ToListAsync();
-                return activities;
+
+                var returnActivities = _mapper.Map<List<Activity>, List<ActivityDTO>>(activities);
+                return returnActivities;
             }
         }
     }

@@ -2,6 +2,7 @@ using System.Text;
 using API.Middleware;
 using Application.Activities;
 using Application.Interfaces;
+using AutoMapper;
 using Domain;
 using FluentValidation.AspNetCore;
 using Infrastructure.Security;
@@ -37,6 +38,7 @@ namespace API
             services.AddDbContext<DataContext>(opt =>
             {
                 opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+                opt.UseLazyLoadingProxies();
             });
             //add CORS for Cross origin requests
             services.AddCors(opt =>
@@ -50,6 +52,10 @@ namespace API
 
             //Add MediatR service
             services.AddMediatR(typeof(List.Handler).Assembly);
+            //Add AutoMapper
+            services.AddAutoMapper(typeof(List.Handler));
+            //Add NewtonJson
+            services.AddControllers().AddNewtonsoftJson();
             //Add Fluent service
             services.AddMvc(option =>
                 {
@@ -60,6 +66,7 @@ namespace API
                     option.Filters.Add(new AuthorizeFilter(policy));
                 }
             ).AddFluentValidation(config => config.RegisterValidatorsFromAssemblyContaining<Create>());
+            //.AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
             //Add Identity Service
             var builder = services.AddIdentityCore<AppUser>();
@@ -67,6 +74,18 @@ namespace API
             identityBuilder.AddEntityFrameworkStores<DataContext>();
             identityBuilder.AddSignInManager<SignInManager<AppUser>>();
             //services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<DataContext>();
+
+            //Add authorization policy
+            services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy("IsActivityHost", policy =>
+                {
+                    policy.Requirements.Add(new IsHostRequirement());
+                });
+            });
+            //AuthorizationHandler inject
+            services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
+            services.AddHttpContextAccessor();
 
             //Add Authentication service
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"]));
