@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Segment, Item, Header, Button, Image } from 'semantic-ui-react';
 import { IActivity } from '../../../app/models/activity';
 import { observer } from 'mobx-react-lite';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { RootStoreContext } from '../../../app/stores/rootStore';
 
 const activityImageStyle = {
   filter: 'brightness(30%)',
@@ -19,6 +20,8 @@ const activityImageTextStyle = {
 };
 
 const ActivityDetailHeader: React.FC<{ activity: IActivity }> = ({ activity }) => {
+  const rootStore = useContext(RootStoreContext);
+  const { cancelAttendance, attendActivity, attendLoading } = rootStore.activityStore;
   return (
     <Segment.Group>
       <Segment basic attached='top' style={{ padding: '0' }}>
@@ -42,11 +45,19 @@ const ActivityDetailHeader: React.FC<{ activity: IActivity }> = ({ activity }) =
         </Segment>
       </Segment>
       <Segment clearing attached='bottom'>
-        <Button color='teal'>Join Activity</Button>
-        <Button>Cancel attendance</Button>
-        <Button as={Link} to={`/manage/${activity.id}`} color='orange' floated='right'>
-          Manage Event
-        </Button>
+        {activity.isHost ? (
+          <Button as={Link} to={`/manage/${activity.id}`} color='orange' floated='right'>
+            Manage Event
+          </Button>
+        ) : activity.isGoing ? (
+          <Button loading={attendLoading} onClick={cancelAttendance}>
+            Cancel attendance
+          </Button>
+        ) : (
+          <Button loading={attendLoading} onClick={attendActivity} color='teal'>
+            Join Activity
+          </Button>
+        )}
       </Segment>
     </Segment.Group>
   );
