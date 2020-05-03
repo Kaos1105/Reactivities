@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ namespace Application.User
                         //use interface instead of concrete class 
                         Token = _jwtGenerator.CreateToken(user),
                         UserName = user.UserName,
-                        Image = null,
+                        Image = user.Photos.FirstOrDefault(x => x.IsMain)?.Url,
                     };
                 }
                 throw new RestException(HttpStatusCode.Unauthorized);
