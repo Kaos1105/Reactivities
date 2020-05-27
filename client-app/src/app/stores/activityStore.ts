@@ -6,6 +6,7 @@ import { history } from '../..';
 import { toast } from 'react-toastify';
 import { RootStore } from './rootStore';
 import { setActivityProps, createAttendee } from '../common/util/util';
+import { HubConnection, HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
 
 export default class ActivityStore {
   _rootStore: RootStore;
@@ -29,6 +30,46 @@ export default class ActivityStore {
 
   //Attend
   @observable attendLoading = false;
+
+  //Hub Connection
+  //reference Only observe NOT modified
+  @observable.ref hubConnection: HubConnection | null = null;
+
+  //Create Hub connection
+  @action createHubConnection = () => {
+    this.hubConnection = new HubConnectionBuilder()
+      .withUrl('https://localhost:5001/chatHub', {
+        accessTokenFactory: () => this._rootStore.commonStore.token!,
+      })
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    this.hubConnection
+      .start()
+      .then(() => console.log(this.hubConnection!.state))
+      .catch((error) => console.log('Error establishing connection: ', error));
+
+    this.hubConnection.on('ReceiveComment', (comment) => {
+      runInAction(() => {
+        this.selectedActivity!.comments.push(comment);
+      });
+    });
+  };
+
+  //Stop Hub Connection
+  @action stopHubConnection = () => {
+    this.hubConnection!.stop();
+  };
+
+  //Add Comment
+  @action addComment = async (values: any) => {
+    values.activityId = this.selectedActivity!.id;
+    try {
+      await this.hubConnection!.invoke('SendComment', values);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   //Sort
   @computed get activitiesByDate() {
@@ -125,6 +166,7 @@ export default class ActivityStore {
       let attendees = [];
       attendees.push(attendee);
       activity.attendees = attendees;
+      activity.comments = [];
       runInAction('creating activity', () => {
         this.activityRegistry.set(activity.id, activity);
       });

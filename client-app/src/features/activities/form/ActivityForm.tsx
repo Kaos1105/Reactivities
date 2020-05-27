@@ -94,7 +94,7 @@ const ActivityForm: React.FC<RouteComponentProps<DetailParams>> = ({ match, hist
     } else {
       editActivity(activity);
     }
-    console.log(activity);
+    //console.log(activity);
   };
 
   //#region commented InputChange
