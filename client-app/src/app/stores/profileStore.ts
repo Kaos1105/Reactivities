@@ -90,7 +90,6 @@ export default class ProfileStore {
     } finally {
       runInAction(() => {
         this.setMainLoading = false;
-        //test git
       });
     }
   };
