@@ -6,6 +6,7 @@ import LoadingComponent from '../../../app/layout/LoadingComponent';
 import { RootStoreContext } from '../../../app/stores/rootStore';
 import InfiniteScroll from 'react-infinite-scroller';
 import ActivityFilter from './ActivityFilter';
+import ActivityListItemPlaceholder from './ActivityListPlaceholder';
 
 //pass down props from parent
 
@@ -25,7 +26,7 @@ const ActivityDashboard: React.FC = () => {
     loadActivities();
   }, [loadActivities]);
 
-  if (loadingInitial && page === 0) return <LoadingComponent content={'Loading component...'} />;
+  // if (loadingInitial && page === 0) return <LoadingComponent content={'Loading component...'} />;
 
   return (
     <Grid>
@@ -37,14 +38,18 @@ const ActivityDashboard: React.FC = () => {
           //   ))}
           // </List>
         }
-        <InfiniteScroll
-          pageStart={0}
-          loadMore={handleGetNext}
-          hasMore={!loadingNext && page + 1 < totalPages}
-          initialLoad={false}
-        >
-          <ActivityList />
-        </InfiniteScroll>
+        {loadingInitial && page === 0 ? (
+          <ActivityListItemPlaceholder />
+        ) : (
+          <InfiniteScroll
+            pageStart={0}
+            loadMore={handleGetNext}
+            hasMore={!loadingNext && page + 1 < totalPages}
+            initialLoad={false}
+          >
+            <ActivityList />
+          </InfiniteScroll>
+        )}
         {/* <Button
           floated='right'
           content='More...'
