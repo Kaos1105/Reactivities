@@ -1,4 +1,4 @@
-import { observable, action, computed, runInAction } from 'mobx';
+import { observable, action, computed, runInAction, reaction } from 'mobx';
 import { SyntheticEvent } from 'react';
 import { IActivity } from '../models/activity';
 import agent from '../api/agent';
@@ -8,10 +8,20 @@ import { RootStore } from './rootStore';
 import { setActivityProps, createAttendee } from '../common/util/util';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@aspnet/signalr';
 
+const LIMIT = 3;
+
 export default class ActivityStore {
   _rootStore: RootStore;
   constructor(rootStore: RootStore) {
     this._rootStore = rootStore;
+    reaction(
+      () => this.predicate.keys(),
+      () => {
+        this.page = 0;
+        this.activityRegistry.clear();
+        this.loadActivities();
+      }
+    );
   }
 
   //Observable map
@@ -27,6 +37,45 @@ export default class ActivityStore {
 
   //Delete
   @observable targetDelete = '';
+
+  //Activity Count
+  @observable activityCount = 0;
+
+  //Activity page
+  @observable page = 0;
+
+  //Get number of page
+  @computed get totalPages() {
+    return Math.ceil(this.activityCount / LIMIT);
+  }
+
+  @action setPage = (page: number) => {
+    this.page = page;
+  };
+
+  //Param URL
+  @observable predicate = new Map();
+
+  @action setPredicate = (predicate: string, value: string | Date) => {
+    this.predicate.clear();
+    if (predicate !== 'all') {
+      this.predicate.set(predicate, value);
+    }
+  };
+
+  @computed get axiosParams() {
+    const params = new URLSearchParams();
+    params.append('limit', String(LIMIT));
+    params.append('offset', `${this.page ? this.page * LIMIT : 0}`);
+    this.predicate.forEach((value, key) => {
+      if (key === 'startDate') {
+        params.append(key, value.toISOString());
+      } else {
+        params.append(key, value);
+      }
+    });
+    return params;
+  }
 
   //Attend
   @observable attendLoading = false;
@@ -94,7 +143,8 @@ export default class ActivityStore {
     const user = this._rootStore.userStore.user!;
 
     try {
-      const activities = await agent.Activities.list();
+      const activitiesEnvelope = await agent.Activities.list(this.axiosParams);
+      const { activities, activityCount } = activitiesEnvelope;
       //@action wrapper only affects the currently running function, not functions that are scheduled after Promise or Async
       //use runInAction to ensure mutation state outside Mobx is not allowed
       runInAction('loading activities', () => {
@@ -102,6 +152,7 @@ export default class ActivityStore {
           setActivityProps(activity, user);
           this.activityRegistry.set(activity.id, activity);
         });
+        this.activityCount = activityCount;
       });
       //console.log(this.groupActivitiesByDate(activities));
     } catch (error) {

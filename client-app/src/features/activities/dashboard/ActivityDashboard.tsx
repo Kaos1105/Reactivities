@@ -1,22 +1,31 @@
-import React, { useContext, useEffect } from 'react';
-import { Grid } from 'semantic-ui-react';
+import React, { useContext, useEffect, useState } from 'react';
+import { Grid, Loader } from 'semantic-ui-react';
 import ActivityList from './ActivityList';
 import { observer } from 'mobx-react-lite';
 import LoadingComponent from '../../../app/layout/LoadingComponent';
 import { RootStoreContext } from '../../../app/stores/rootStore';
+import InfiniteScroll from 'react-infinite-scroller';
+import ActivityFilter from './ActivityFilter';
 
 //pass down props from parent
 
 const ActivityDashboard: React.FC = () => {
   const rootStore = useContext(RootStoreContext);
-  const { loadActivities, loadingInitial } = rootStore.activityStore;
+  const { loadActivities, loadingInitial, setPage, page, totalPages } = rootStore.activityStore;
+  const [loadingNext, setLoadingNext] = useState(false);
+
+  const handleGetNext = () => {
+    setLoadingNext(true);
+    setPage(page + 1);
+    loadActivities().then(() => setLoadingNext(false));
+  };
   // Similar to componentDidMount and componentDidUpdate:
   // first parameter is componentDidMount, second is componentDidUpdate with return similar to componentUnMount
   useEffect(() => {
     loadActivities();
   }, [loadActivities]);
 
-  if (loadingInitial) return <LoadingComponent content={'Loading component...'} />;
+  if (loadingInitial && page === 0) return <LoadingComponent content={'Loading component...'} />;
 
   return (
     <Grid>
@@ -27,8 +36,23 @@ const ActivityDashboard: React.FC = () => {
           //     <List.Item key={activity.id}>{activity.title}</List.Item>
           //   ))}
           // </List>
-          <ActivityList />
         }
+        <InfiniteScroll
+          pageStart={0}
+          loadMore={handleGetNext}
+          hasMore={!loadingNext && page + 1 < totalPages}
+          initialLoad={false}
+        >
+          <ActivityList />
+        </InfiniteScroll>
+        {/* <Button
+          floated='right'
+          content='More...'
+          positive
+          disabled={totalPages === page + 1}
+          onClick={handleGetNext}
+          loading={loadingNext}
+        /> */}
       </Grid.Column>
       <Grid.Column width='6'>
         {/* only render if selectedActivity is not null */}
@@ -39,7 +63,10 @@ const ActivityDashboard: React.FC = () => {
             key={(selectedActivity && selectedActivity.id) || 0}
           />
         )} */}
-        <h2>Activity Filters</h2>
+        <ActivityFilter />
+      </Grid.Column>
+      <Grid.Column width='10'>
+        <Loader active={loadingNext} />
       </Grid.Column>
     </Grid>
   );
